@@ -1,0 +1,35 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      docker: 18
+  pre_build:
+    commands:
+      # Install Snyk
+      - echo Install Snyk
+      - curl -Lo ./snyk "https://github.com/snyk/snyk/releases/download/v1.210.0/snyk-linux"
+      - chmod -R +x ./snyk
+      # Snyk auth
+      - ./snyk config set api="$SNYK_AUTH_TOKEN"
+      # Build Docker image for testing
+      - echo Building the Docker image for testing...
+      - docker build -t lukondefmwila/dkr-scanned-react-container-image-test -f ./docker-application/Dockerfile.dev ./docker-application
+  build:
+    commands:
+      - echo Build started on `date`
+      # Run tests with built Docker image
+      - echo Run react tests...
+      - docker run -e CI=true lukondefmwila/dkr-scanned-react-container-image-test
+      # Scan Docker image with Snyk
+      - ./snyk test --docker lukondefmwila/dkr-scanned-react-container-image-test:latest --file=Dockerfile.dev
+      - ./snyk monitor --docker lukondefmwila/dkr-scanned-react-container-image-test:latest --file=Dockerfile.dev
+      # Build the production Docker image
+      - echo Building the production Docker image... 
+      - docker build -t lukondefmwila/dkr-scanned-react-container-image ./docker-application/
+      # Log in to the Docker CLI
+      - echo "$DOCKER_PW" | docker login -u "$DOCKER_ID" --password-stdin
+  post_build:
+    commands:
+      # Take these images and push them to Docker hub
+      - echo Pushing the Docker images...
+      - docker push lukondefmwila/dkr-scanned-react-container-image
