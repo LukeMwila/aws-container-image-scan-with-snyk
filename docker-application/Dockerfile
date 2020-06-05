@@ -1,4 +1,4 @@
-FROM node:12.13.0-alpine as build 
+FROM node:13.14-buster-slim as build 
 WORKDIR /app
 COPY package*.json ./
 RUN npm install 
