@@ -21,6 +21,10 @@ variable "docker_secret_name" {
   type = string
 }
 
+variable "snyk_secret_name" {
+  type = string
+}
+
 variable "environment" {
   type = string
 }
