@@ -21,7 +21,7 @@ phases:
       - echo Run react tests...
       - docker run -e CI=true lukondefmwila/dkr-scanned-react-container-image-test
       # Scan Docker image with Snyk
-      - ./snyk test --docker lukondefmwila/dkr-scanned-react-container-image-test:latest --file=./docker-application/Dockerfile.dev
+      # - ./snyk test --severity-threshold=medium --docker lukondefmwila/dkr-scanned-react-container-image-test:latest --file=./docker-application/Dockerfile.dev
       - ./snyk monitor --docker lukondefmwila/dkr-scanned-react-container-image-test:latest --file=./docker-application/Dockerfile.dev
       # Build the production Docker image
       - echo Building the production Docker image... 
