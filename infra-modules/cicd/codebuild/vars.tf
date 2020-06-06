@@ -19,7 +19,7 @@ variable "docker_pw" {
 }
 
 variable "snyk_auth_token" {
-  description = "Snyk auth token"
+  description = "Snyk authentication token"
   type = string
 }
 

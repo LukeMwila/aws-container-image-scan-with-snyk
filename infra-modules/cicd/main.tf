@@ -1,4 +1,4 @@
-# GitHub secrets
+# GitHub secret
 data "aws_secretsmanager_secret" "github_secret" {
   name = var.github_secret_name
 }
@@ -16,7 +16,7 @@ data "aws_secretsmanager_secret_version" "docker_creds" {
   secret_id = data.aws_secretsmanager_secret.docker_secret.id
 }
 
-# Snyk secret
+# Snyk secrets
 data "aws_secretsmanager_secret" "snyk_secret" {
   name = var.snyk_secret_name
 }
@@ -24,6 +24,7 @@ data "aws_secretsmanager_secret" "snyk_secret" {
 data "aws_secretsmanager_secret_version" "snyk_auth" {
   secret_id = data.aws_secretsmanager_secret.snyk_secret.id
 }
+
 
 # Codebuild module for CI
 module "codebuild_for_container_app" {
@@ -48,4 +49,28 @@ module "codepipeline_for_container_app" {
   region = var.region
   project_name = module.codebuild_for_container_app.project_name
   github_token = jsondecode(data.aws_secretsmanager_secret_version.github_token.secret_string)["GitHubPersonalAccessToken"]
+}
+
+# Cloudwatch event module for pipeline state changes
+module "cloudwatch_for_pipeline_notifications" {
+  source = "./cloudwatch"
+  name = "container-pipeline-state-change"
+  description = "event for container app pipeline state change"
+  role_name = "cloudwatch-for-container-pipeline-role"
+  policy_name = "cloudwatch-for-container-pipeline-policy"
+  targetId = "SendToLambda"
+  codepipeline_arn = module.codepipeline_for_container_app.arn
+  codepipeline_name = module.codepipeline_for_container_app.name
+  resource_arn = module.lambda_for_pipeline_notifications.arn
+  environment = var.environment
+}
+
+# Lambda module for pushing pipeline state change notifications to Slack
+module "lambda_for_pipeline_notifications" {
+  source = "./lambda"
+  function_name = "lambda-push-container-pipeline-notification-to-slack"
+  source_arn = module.cloudwatch_for_pipeline_notifications.arn
+  lambda_role = "lambda-for-container-pipeline-role"
+  lambda_policy = "lambda-for-container-pipeline-policy"
+  environment = var.environment
 }
