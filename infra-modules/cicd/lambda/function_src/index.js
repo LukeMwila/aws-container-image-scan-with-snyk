@@ -34,7 +34,7 @@ let getSnykApiRequestDetails = () => {
   const options = {
     hostname: 'snyk.io',
     port: 443,
-    path: `/api/v1/${process.env.SNYK_ORGANIZATION_ID}/project/${process.env.SNYK_PROJECT_ID}/issues`,
+    path: `/api/v1/org/${process.env.SNYK_ORGANIZATION_ID}/project/${process.env.SNYK_PROJECT_ID}/issues`,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
